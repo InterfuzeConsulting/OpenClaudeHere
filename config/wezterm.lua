@@ -48,18 +48,18 @@ end)
 -- ── Launch menu ───────────────────────────────────────────────────────────────
 
 config.launch_menu = {
-  -- Model-specific entries
+  -- Model-specific entries (family aliases: always resolve to latest)
   {
     label = 'Claude — Sonnet',
-    args  = { 'claude', '--dangerously-skip-permissions', '--model', 'claude-sonnet-4-6' },
+    args  = { 'claude', '--permission-mode', 'auto', '--model', 'claude-sonnet-4-6' },
   },
   {
     label = 'Claude — Haiku',
-    args  = { 'claude', '--dangerously-skip-permissions', '--model', 'claude-haiku-4-5-20251001' },
+    args  = { 'claude', '--permission-mode', 'auto', '--model', 'claude-haiku-4-5-20251001' },
   },
   {
     label = 'Claude — Opus',
-    args  = { 'claude', '--dangerously-skip-permissions', '--model', 'claude-opus-4-6' },
+    args  = { 'claude', '--permission-mode', 'auto', '--model', 'claude-opus-4-8' },
   },
 }
 
@@ -79,7 +79,7 @@ config.keys = {
     action = wezterm.action_callback(function(window, pane)
       window:perform_action(
         wezterm.action.SpawnCommandInNewTab {
-          args = { 'claude', '--dangerously-skip-permissions' },
+          args = { 'claude', '--permission-mode', 'auto' },
           cwd  = pane:get_current_working_dir().file_path,
         },
         pane

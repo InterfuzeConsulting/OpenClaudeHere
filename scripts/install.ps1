@@ -30,6 +30,7 @@ $binDir       = Join-Path $repoRoot 'bin'
 $weztermExe   = Join-Path $binDir   'wezterm.exe'
 $configFile   = Join-Path $repoRoot 'config\wezterm.lua'
 $launchScript = Join-Path $repoRoot 'scripts\launch-claude.ps1'
+$iconFile     = Join-Path $repoRoot 'assets\claude-workspace.ico'
 $menuLabel    = 'Open Claude Workspace Here (5 tabs)'
 $menuKey      = 'OpenWezTermClaude'
 
@@ -147,7 +148,7 @@ foreach ($entry in $entries) {
     # Create/overwrite parent key, set default value (label), Icon, and Position
     New-Item -Path $entry.Root -Force | Out-Null
     Set-Item -Path $entry.Root -Value $menuLabel
-    New-ItemProperty -Path $entry.Root -Name 'Icon'     -Value $weztermExe -Force | Out-Null
+    New-ItemProperty -Path $entry.Root -Name 'Icon'     -Value $iconFile   -Force | Out-Null
     New-ItemProperty -Path $entry.Root -Name 'Position' -Value 'Top'       -Force | Out-Null
 
     # Create/overwrite command subkey
@@ -168,7 +169,7 @@ $wsh      = New-Object -ComObject WScript.Shell
 $shortcut = $wsh.CreateShortcut($shortcutPath)
 $shortcut.TargetPath   = 'powershell.exe'
 $shortcut.Arguments    = "-WindowStyle Hidden -ExecutionPolicy Bypass -File `"$pickScript`""
-$shortcut.IconLocation = "$weztermExe,0"
+$shortcut.IconLocation = "$iconFile,0"
 $shortcut.Description  = 'Pick a folder and open it as a Claude workspace'
 $shortcut.Save()
 

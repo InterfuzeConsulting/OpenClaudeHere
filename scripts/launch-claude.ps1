@@ -7,13 +7,13 @@
     Called by the Explorer context menu ("Open Claude Workspace Here").
 
     Tab layout:
-        1 -- Sonnet 1  (claude-sonnet-4-6)          <- active on open
+        1 -- Sonnet 1  (claude-sonnet-4-6)   <- active on open
         2 -- Sonnet 2  (claude-sonnet-4-6)
         3 -- Sonnet 3  (claude-sonnet-4-6)
         4 -- Haiku     (claude-haiku-4-5-20251001)
-        5 -- Opus      (claude-opus-4-6)
+        5 -- Opus      (claude-opus-4-8)
 
-    All tabs use --dangerously-skip-permissions.
+    All tabs use --permission-mode auto.
     Window title is set to "Claude - <TargetDir>" via workspace rename so it
     persists even after Claude CLI emits its own OSC 2 title sequences.
 
@@ -77,7 +77,7 @@ $startArgs = @(
     '--always-new-process',
     '--cwd', $TargetDir,
     '--',
-    'claude', '--dangerously-skip-permissions', '--model', 'claude-sonnet-4-6'
+    'claude', '--permission-mode', 'auto', '--model', 'claude-sonnet-4-6'
 )
 
 Start-Process -FilePath $wezterm -ArgumentList $startArgs -WindowStyle Hidden
@@ -155,8 +155,8 @@ Write-Host "Workspace renamed to: $winTitle"
 $tabs = @(
     @{ Label = 'Sonnet 2'; Model = 'claude-sonnet-4-6' },
     @{ Label = 'Sonnet 3'; Model = 'claude-sonnet-4-6' },
-    @{ Label = 'Haiku';    Model = 'claude-haiku-4-5-20251001' },
-    @{ Label = 'Opus';     Model = 'claude-opus-4-6' }
+    @{ Label = 'Haiku';    Model = 'claude-haiku-4-5-20251001'  },
+    @{ Label = 'Opus';     Model = 'claude-opus-4-8'   }
 )
 
 $spawnedPaneIds = @()
@@ -165,7 +165,7 @@ foreach ($tab in $tabs) {
     $paneIdRaw = & $wezterm --config-file $configFile cli spawn `
         --window-id $windowId `
         --cwd $TargetDir `
-        -- claude --dangerously-skip-permissions --model $tab.Model
+        -- claude --permission-mode auto --model $tab.Model
 
     $spawnedPaneIds += $paneIdRaw.Trim()
     Write-Host "Spawned tab '$($tab.Label)' -- pane ID: $($paneIdRaw.Trim())"
