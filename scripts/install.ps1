@@ -33,6 +33,8 @@ $launchScript = Join-Path $repoRoot 'scripts\launch-claude.ps1'
 $iconFile     = Join-Path $repoRoot 'assets\claude-workspace.ico'
 $menuLabel    = 'Open Claude Workspace Here (5 tabs)'
 $menuKey      = 'OpenWezTermClaude'
+$apiMenuLabel = 'Open Claude Workspace Here (5 tabs on API Key)'
+$apiMenuKey   = 'OpenWezTermClaudeApiKey'
 
 # =============================================================================
 # Step 1: Create bin\
@@ -130,32 +132,37 @@ if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
 #       (default) = "powershell.exe ... -TargetDir <token>"
 # =============================================================================
 
-$entries = @(
-    @{
-        Root  = "HKCU:\Software\Classes\Directory\shell\$menuKey"
-        Token = '%1'
-    },
-    @{
-        Root  = "HKCU:\Software\Classes\Directory\Background\shell\$menuKey"
-        Token = '%V'
-    }
+# Two menu items, each registered under both context-menu roots:
+#   - default 5-tab item            (login auth)
+#   - "(5 tabs on API Key)" variant (adds -UseApiKey to the launch command)
+$menus = @(
+    @{ Key = $menuKey;    Label = $menuLabel;    ExtraArgs = '' },
+    @{ Key = $apiMenuKey; Label = $apiMenuLabel; ExtraArgs = ' -UseApiKey' }
 )
 
-foreach ($entry in $entries) {
-    $cmdValue = "powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$launchScript`" -TargetDir `"$($entry.Token)`""
-    $cmdKey   = "$($entry.Root)\command"
+$roots = @(
+    @{ Base = 'HKCU:\Software\Classes\Directory\shell';            Token = '%1' },  # right-click a folder
+    @{ Base = 'HKCU:\Software\Classes\Directory\Background\shell'; Token = '%V' }   # right-click inside a folder
+)
 
-    # Create/overwrite parent key, set default value (label), Icon, and Position
-    New-Item -Path $entry.Root -Force | Out-Null
-    Set-Item -Path $entry.Root -Value $menuLabel
-    New-ItemProperty -Path $entry.Root -Name 'Icon'     -Value $iconFile   -Force | Out-Null
-    New-ItemProperty -Path $entry.Root -Name 'Position' -Value 'Top'       -Force | Out-Null
+foreach ($menu in $menus) {
+    foreach ($root in $roots) {
+        $regKey   = "$($root.Base)\$($menu.Key)"
+        $cmdKey   = "$regKey\command"
+        $cmdValue = "powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$launchScript`" -TargetDir `"$($root.Token)`"$($menu.ExtraArgs)"
 
-    # Create/overwrite command subkey
-    New-Item -Path $cmdKey -Force | Out-Null
-    Set-Item -Path $cmdKey -Value $cmdValue
+        # Create/overwrite parent key, set default value (label), Icon, and Position
+        New-Item -Path $regKey -Force | Out-Null
+        Set-Item -Path $regKey -Value $menu.Label
+        New-ItemProperty -Path $regKey -Name 'Icon'     -Value $iconFile -Force | Out-Null
+        New-ItemProperty -Path $regKey -Name 'Position' -Value 'Top'     -Force | Out-Null
 
-    Write-Host "[OK] Registered: $($entry.Root)"
+        # Create/overwrite command subkey
+        New-Item -Path $cmdKey -Force | Out-Null
+        Set-Item -Path $cmdKey -Value $cmdValue
+
+        Write-Host "[OK] Registered: $regKey"
+    }
 }
 
 # =============================================================================
@@ -188,8 +195,13 @@ Write-Host "WezTerm binary : $weztermExe"
 Write-Host "Config file    : $configFile"
 Write-Host "Launch script  : $launchScript"
 Write-Host "Menu label     : $menuLabel"
+Write-Host "Menu label     : $apiMenuLabel"
 Write-Host ''
-Write-Host 'Right-click any folder (or folder background) in Explorer and'
-Write-Host "choose ""$menuLabel"" to open 5 Claude tabs."
+Write-Host 'Right-click any folder (or folder background) in Explorer and choose:'
+Write-Host "  - ""$menuLabel"" to open 5 Claude tabs (login auth)."
+Write-Host "  - ""$apiMenuLabel"" to open 5 tabs that"
+Write-Host '    authenticate with an Anthropic API key. The first launch prompts for'
+Write-Host '    the key and stores it encrypted; later launches reuse it. Delete'
+Write-Host '    config\api-key.dat to rotate/clear it.'
 Write-Host ''
 Write-Host "To uninstall   : powershell -ExecutionPolicy Bypass -File ""$uninstallScript"""

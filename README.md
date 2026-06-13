@@ -9,15 +9,25 @@ A self-contained WezTerm setup that opens any folder as a 5-tab Claude workspace
 
 Right-clicking any folder gives you **"Open Claude Workspace Here (5 tabs)"**, which opens a WezTerm window titled `Claude - <folder>` with:
 
-| Tab | Model |
-|-----|-------|
-| Sonnet 1–3 (3 tabs) | `claude-sonnet-4-6` |
-| Haiku | `claude-haiku-4-5-20251001` |
-| Opus | `claude-opus-4-6` |
+| Tab                 | Model                       |
+| ------------------- | --------------------------- |
+| Sonnet 1–3 (3 tabs) | `claude-sonnet-4-6`         |
+| Haiku               | `claude-haiku-4-5-20251001` |
+| Opus                | `claude-opus-4-6`           |
 
 All tabs start with `--dangerously-skip-permissions`. Shift+Enter is enabled for multiline prompts.
 
 A **"Launch Claude Workspace.lnk"** shortcut is also created in this folder — pin it to your taskbar for a folder-picker launcher.
+
+## API key mode
+
+A second menu item, **"Open Claude Workspace Here (5 tabs on API Key)"**, opens the same 5-tab layout but authenticates the Claude instances with an Anthropic API key (billed via the API) instead of your logged-in session.
+
+- **First click** prompts for the key in a masked dialog. The key must start with `sk-ant-`; cancelling or entering nothing aborts without launching, and an invalid key shows an explanation and aborts.
+- The key is stored **encrypted** (Windows DPAPI, your account only) at `config\api-key.dat` and **reused** on every later click — you are not prompted again.
+- **Rotate / clear the key** by deleting `config\api-key.dat`; the next launch re-prompts. (Uninstall also deletes it.)
+
+The window title shows which auth mode is active: `Claude - <folder> [Using API Key]` vs `Claude - <folder> [Using Login]`.
 
 ## Install
 
@@ -35,7 +45,7 @@ Downloads WezTerm into `bin\`, registers the right-click menu (no admin required
 powershell -ExecutionPolicy Bypass -File scripts\uninstall.ps1
 ```
 
-Removes the context menu entries and shortcut. Delete the folder to remove everything else.
+Removes both context menu items, the shortcut, and the stored API key (`config\api-key.dat`). Delete the folder to remove everything else.
 
 ## Portability
 
